@@ -15,7 +15,7 @@ export function MathText({ latex, inline = false, className }: MathTextProps) {
   const Tag = inline ? 'span' : 'div';
 
   return (
-    <Tag className={cn('math-text max-w-full', className)}>
+    <Tag className={cn('math-text max-w-full whitespace-pre-wrap', className)}>
       <MathJax inline={inline}>{normalized}</MathJax>
     </Tag>
   );

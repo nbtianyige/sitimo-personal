@@ -14,7 +14,11 @@ export function parseTexFile(content: string): ParseTexFileResult {
   const suggestedSource = extractSuggestedSource(content);
 
   const docStart = content.indexOf('\\begin{document}');
-  const body = docStart >= 0 ? content.slice(docStart + '\\begin{document}'.length) : content;
+  let body = docStart >= 0 ? content.slice(docStart + '\\begin{document}'.length) : content;
+  const endDocIdx = body.lastIndexOf('\\end{document}');
+  if (endDocIdx >= 0) {
+    body = body.slice(0, endDocIdx);
+  }
 
   const problems = extractProblems(body, warnings);
 
@@ -182,7 +186,7 @@ function extractTopLevelItems(enumContent: string): string[] {
 function findTextMarkerProblems(content: string): string[] {
   const problems: string[] = [];
   // Find all text-marker positions
-  const markers: { index: number; endIndex: number }[] = [];
+  const markers: { index: number }[] = [];
 
   // Try multiple regex patterns for text markers
   const patterns = [

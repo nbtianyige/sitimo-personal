@@ -20,7 +20,7 @@ func (r *Repository) CreateProblem(ctx context.Context, input domain.ProblemWrit
 	}
 	defer tx.Rollback(ctx)
 
-	created, err := r.createProblemTx(ctx, tx, input)
+	problemID, err := r.createProblemTx(ctx, tx, input)
 	if err != nil {
 		return nil, err
 	}
@@ -29,21 +29,21 @@ func (r *Repository) CreateProblem(ctx context.Context, input domain.ProblemWrit
 		return nil, err
 	}
 
-	return created, nil
+	return r.GetProblemDetail(ctx, problemID, true)
 }
 
-func (r *Repository) createProblemTx(ctx context.Context, tx pgx.Tx, input domain.ProblemWriteInput) (*domain.ProblemDetail, error) {
+func (r *Repository) createProblemTx(ctx context.Context, tx pgx.Tx, input domain.ProblemWriteInput) (string, error) {
 	id := newID()
 	code, err := r.NextProblemCode(ctx, tx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	queries := r.queries.WithTx(tx)
 	now := time.Now().UTC()
 	formulaTokens := search.TokenizeLatex(input.Latex)
 	subjectiveScore, err := pgNumericFromPtr(input.SubjectiveScore)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	if _, err := queries.InsertProblem(ctx, sqlc.InsertProblemParams{
 		ID:              id,
@@ -63,17 +63,17 @@ func (r *Repository) createProblemTx(ctx context.Context, tx pgx.Tx, input domai
 		CreatedAt:       pgTimestamptzFromTime(now),
 		UpdatedAt:       pgTimestamptzFromTime(now),
 	}); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if err := r.replaceProblemRelations(ctx, queries, id, input.TagIDs, input.ImageIDs); err != nil {
-		return nil, err
+		return "", err
 	}
 	if err := r.insertProblemVersion(ctx, queries, id, 1, input, code, now, false); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return r.GetProblemDetail(ctx, id, true)
+	return id, nil
 }
 
 func (r *Repository) UpdateProblem(ctx context.Context, id string, input domain.ProblemWriteInput) (*domain.ProblemDetail, error) {

@@ -297,7 +297,7 @@ func parseTagNames(raw any) []string {
 func skipPreambleBlocks(blocks []Block) []Block {
 	for i, b := range blocks {
 		if b.Type == BlockEnvBegin && b.EnvName == "document" {
-			return blocks[i:]
+			return blocks[i+1:]
 		}
 	}
 	return blocks

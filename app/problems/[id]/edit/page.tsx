@@ -20,6 +20,7 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { buildGradeOptions, STANDARD_GRADES } from '@/lib/constants';
+import { AppError } from '@/lib/api/client';
 import { applyValidationErrors } from '@/lib/forms';
 import { useImages } from '@/lib/hooks/use-images';
 import { useCreateProblem, useProblem, useUpdateProblem } from '@/lib/hooks/use-problems';
@@ -99,6 +100,9 @@ export default function ProblemEditPage({ params }: { params: Promise<{ id: stri
       router.push(`/problems/${result.problem.id}`);
     } catch (error) {
       applyValidationErrors(form, error);
+      if (error instanceof AppError && error.code !== 'validation_failed') {
+        toast.error(error.message);
+      }
     }
   };
 

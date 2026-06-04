@@ -1,6 +1,6 @@
 const TEXT_COMMAND_PATTERN = /\\text\{([^{}]+)\}/g;
 // Matches \item or \task optionally followed by [label]
-const ITEM_PATTERN = /\\(?:item|task)(?:\[[^\]]*\])?\s*/g;
+const ITEM_PATTERN = /\\(?:item|task)(?:\[[^\]]*\])?/g;
 
 // Detects any math delimiter: \(, \[, $, $$
 const HAS_MATH_PATTERN = /\\\(|\\\[|\$\$?/;
@@ -38,12 +38,25 @@ function stripStructuralCommands(value: string): string {
   // Strip LaTeX comments (% to end of line)
   s = s.replace(/%[^\n]*/g, '');
 
+  // Strip full-document preamble and structural commands
+  s = s.replace(/\\documentclass(?:\[[^\]]*\])?\{[^}]*\}\s*/g, '');
+  s = s.replace(/\\usepackage(?:\[[^\]]*\])?\{[^}]*\}\s*/g, '');
+  s = s.replace(/\\usetikzlibrary\{[^}]*\}\s*/g, '');
+  s = s.replace(/\\geometry\{[^}]*\}\s*/g, '');
+
+  // Strip document environment markers, preserving body
+  s = s.replace(/\\begin\{document\}\s*/g, '');
+  s = s.replace(/\\end\{document\}\s*/g, '');
+
   // \underline{\hspace{...}} or \underline{\qquad} → ____ (fill-in-blank)
   s = s.replace(/\\underline\{\\(?:hspace\{[^}]*\}|qquad|quad)\}/g, '____');
   // \underline{\hspace{X em}} with space before unit
   s = s.replace(/\\underline\{\\hspace\{[^}]*\}\}/g, '____');
   // bare \underline{...} that contains only whitespace/hspace → ____
   s = s.replace(/\\underline\{\s*\}/g, '____');
+
+  // \noindent must be stripped before replaceNestedBraces removes adjacent commands
+  s = s.replace(/\\noindent\b\s*/g, '');
 
   // \textbf{content} → content
   s = replaceNestedBraces(s, 'textbf');
@@ -87,11 +100,13 @@ function stripStructuralCommands(value: string): string {
   s = s.replace(/\\medskip\b\s*/g, '');
   s = s.replace(/\\bigskip\b\s*/g, '');
   s = s.replace(/\\smallskip\b\s*/g, '');
-  s = s.replace(/\\noindent\b\s*/g, '');
   s = s.replace(/\\par\b\s*/g, ' ');
 
   // Collapse multiple spaces/newlines into single space
-  s = s.replace(/[ \t]*\n[ \t]*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  s = s.replace(/[ \t]+$/gm, '');
+  s = s.replace(/[ \t]+/g, ' ');
+  s = s.replace(/\n{3,}/g, '\n\n');
+  s = s.trim();
 
   return s;
 }
@@ -140,7 +155,7 @@ function replaceNestedBraces(value: string, cmd: string): string {
  * Must run before replaceItemCommands so bare \item is still converted to A/B/C/D.
  */
 function replaceDescriptionItems(value: string): string {
-  return value.replace(/\\item\[([^\]]*)\]\s*/g, '$1: ');
+  return value.replace(/\\item\[([^\]]*)\]/g, '$1: ');
 }
 
 /**
@@ -222,9 +237,43 @@ function findNextMathStart(value: string, fromIndex: number): MathDelimiter | nu
 }
 
 function normalizeTextSegment(segment: string): string {
-  return segment
+  let s = segment
     .replace(TEXT_COMMAND_PATTERN, '$1')
-    .replace(/\\\\\s*/g, ' ');
+    .replace(/\\\\\s*/g, ' ')
+    .replace(/\\ /g, ' ')
+    .replace(/\\,/g, ' ')
+    .replace(/\\;/g, ' ')
+    .replace(/\\quad\b/g, '  ')
+    .replace(/\\qquad\b/g, '    ');
+
+  const TEXT_SYMBOL_MAP: Record<string, string> = {
+    '\\textbullet': '•',
+    '\\textendash': '–',
+    '\\textemdash': '—',
+    '\\textasciitilde': '~',
+    '\\textasciicircum': '^',
+    '\\textbackslash': '\\',
+    '\\textbar': '|',
+    '\\textless': '<',
+    '\\textgreater': '>',
+    '\\textlbrace': '{',
+    '\\textrbrace': '}',
+    '\\textpercent': '%',
+    '\\textdollar': '$',
+    '\\textunderscore': '_',
+    '\\textampersand': '&',
+    '\\textquestiondown': '¿',
+    '\\textexclamdown': '¡',
+    '\\textsection': '§',
+    '\\textparagraph': '¶',
+  };
+
+  for (const [cmd, char] of Object.entries(TEXT_SYMBOL_MAP)) {
+    const re = new RegExp(cmd.replace(/\\/g, '\\\\') + '\\b', 'g');
+    s = s.replace(re, char);
+  }
+
+  return s;
 }
 
 function normalizeMathSegment(segment: string): string {

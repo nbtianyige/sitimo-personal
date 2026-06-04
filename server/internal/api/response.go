@@ -137,6 +137,9 @@ func respondError(w http.ResponseWriter, status int, code string, err error) {
 	if msg, ok := errorMessages[code]; ok {
 		userMessage = msg
 	}
+	if err != nil {
+		userMessage = userMessage + " [" + err.Error() + "]"
+	}
 
 	_ = json.NewEncoder(w).Encode(envelope{
 		Data: nil,

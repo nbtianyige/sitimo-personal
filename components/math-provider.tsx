@@ -4,9 +4,9 @@ import type { ReactNode } from 'react';
 import { MathJaxContext } from 'better-react-mathjax';
 
 const mathJaxConfig = {
-  loader: { load: ['[tex]/ams'] },
+  loader: { load: ['[tex]/ams', '[tex]/textmacros'] },
   tex: {
-    packages: { '[+]': ['ams'] },
+    packages: { '[+]': ['ams', 'textmacros'] },
     inlineMath: [['$', '$'], ['\\(', '\\)']],
     displayMath: [['$$', '$$'], ['\\[', '\\]']],
   },
