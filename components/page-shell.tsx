@@ -54,7 +54,7 @@ export function PageHeader({
           {eyebrow ? <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground/80">{eyebrow}</p> : null}
           <div className="space-y-2">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
-            {description ? <p className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p> : null}
+            {description ? <div className="max-w-3xl text-sm leading-6 text-muted-foreground">{description}</div> : null}
           </div>
           {badges ? <div className="flex flex-wrap items-center gap-2">{badges}</div> : null}
           {children}
