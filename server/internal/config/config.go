@@ -10,15 +10,19 @@ import (
 )
 
 type Config struct {
-	AppEnv         string
-	Port           string
-	DatabaseURL    string
-	StorageRoot    string
-	PublicBaseURL  string
-	AllowedOrigins []string
-	LogLevel       string
-	XelatexPath    string
-	MagickPath     string
+	AppEnv           string
+	Port             string
+	DatabaseURL      string
+	StorageRoot      string
+	PublicBaseURL    string
+	AllowedOrigins   []string
+	LogLevel         string
+	XelatexPath      string
+	MagickPath       string
+	// PDF conversion settings
+	PdfConverterType string // "local", "mineru-cloud", "disabled"
+	MinerUAPIKey     string
+	MinerUAPIBase    string
 }
 
 func Load() (Config, error) {
@@ -35,6 +39,9 @@ func Load() (Config, error) {
 	v.SetDefault("LOG_LEVEL", "debug")
 	v.SetDefault("XELATEX_PATH", "xelatex")
 	v.SetDefault("MAGICK_PATH", "convert")
+	// PDF conversion defaults
+	v.SetDefault("PDF_CONVERTER_TYPE", "local")
+	v.SetDefault("MINERU_API_BASE", "https://mineru.net/api/v4")
 
 	if envPath := os.Getenv("SERVER_ENV_PATH"); envPath != "" {
 		v.SetConfigFile(envPath)
@@ -52,15 +59,18 @@ func Load() (Config, error) {
 	}
 
 	cfg := Config{
-		AppEnv:         v.GetString("APP_ENV"),
-		Port:           v.GetString("PORT"),
-		DatabaseURL:    v.GetString("DATABASE_URL"),
-		StorageRoot:    v.GetString("STORAGE_ROOT"),
-		PublicBaseURL:  strings.TrimRight(v.GetString("PUBLIC_BASE_URL"), "/"),
-		AllowedOrigins: splitCSV(v.GetString("ALLOWED_ORIGINS")),
-		LogLevel:       v.GetString("LOG_LEVEL"),
-		XelatexPath:    v.GetString("XELATEX_PATH"),
-		MagickPath:     v.GetString("MAGICK_PATH"),
+		AppEnv:           v.GetString("APP_ENV"),
+		Port:             v.GetString("PORT"),
+		DatabaseURL:      v.GetString("DATABASE_URL"),
+		StorageRoot:      v.GetString("STORAGE_ROOT"),
+		PublicBaseURL:    strings.TrimRight(v.GetString("PUBLIC_BASE_URL"), "/"),
+		AllowedOrigins:   splitCSV(v.GetString("ALLOWED_ORIGINS")),
+		LogLevel:         v.GetString("LOG_LEVEL"),
+		XelatexPath:      v.GetString("XELATEX_PATH"),
+		MagickPath:       v.GetString("MAGICK_PATH"),
+		PdfConverterType: v.GetString("PDF_CONVERTER_TYPE"),
+		MinerUAPIKey:     v.GetString("MINERU_API_KEY"),
+		MinerUAPIBase:    v.GetString("MINERU_API_BASE"),
 	}
 
 	return cfg, nil

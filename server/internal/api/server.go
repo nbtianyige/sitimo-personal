@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"mathlib/server/internal/config"
+	"mathlib/server/internal/parser"
 	"mathlib/server/internal/service"
 
 	"github.com/go-chi/chi/v5"
@@ -19,14 +20,20 @@ import (
 )
 
 type Server struct {
-	cfg    config.Config
-	svc    *service.Service
-	logger zerolog.Logger
+	cfg          config.Config
+	svc          *service.Service
+	logger       zerolog.Logger
+	pdfConverter parser.PDFConverter
 }
 
 func New(cfg config.Config, svc *service.Service, logger zerolog.Logger) http.Handler {
 	SetLogger(logger)
-	server := &Server{cfg: cfg, svc: svc, logger: logger}
+	server := &Server{
+		cfg:          cfg,
+		svc:          svc,
+		logger:       logger,
+		pdfConverter: parser.NewPDFConverter(cfg.PdfConverterType, cfg.MinerUAPIKey, cfg.MinerUAPIBase),
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)

@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Check, Eye, Filter, Image as ImageIcon, LayoutGrid, List, Pencil, Plus, Search, ShoppingBasket, Trash2, X } from 'lucide-react';
+import { Check, Eye, Filter, Image as ImageIcon, LayoutGrid, List, Pencil, Plus, Search, ShoppingBasket, Trash2, X,
+  FileUp,
+} from 'lucide-react';
 import { MathText } from '@/components/math-text';
 import { ConfirmActionButton } from '@/components/confirm-action-button';
 import { PageHeader, PagePanel, PageShell, PageToolbar } from '@/components/page-shell';
@@ -117,12 +119,20 @@ export default function ProblemsPage() {
           </>
         }
         actions={
-          <Button asChild>
-            <Link href="/problems/new">
-              <Plus className="mr-2 h-4 w-4" />
-              新建题目
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/import/wizard">
+                <FileUp className="mr-2 h-4 w-4" />
+                导入
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/problems/new">
+                <Plus className="mr-2 h-4 w-4" />
+                新建题目
+              </Link>
+            </Button>
+          </div>
         }
       />
 

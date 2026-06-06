@@ -24,11 +24,13 @@ type Block struct {
 
 // ProblemBlock represents an extracted problem from the parsed result.
 type ProblemBlock struct {
-	Body        string   // problem body (without enumerate wrapping)
-	LineStart   int      // start line
-	Label       string   // item label text
-	Pattern     string   // "A", "B", "C", or "D"
-	SectionTags []string
+	Body          string   // problem body (without enumerate wrapping)
+	LineStart     int      // start line
+	Label         string   // item label text
+	Pattern       string   // "A", "B", "C", "D" or "mineru"
+	SectionTags   []string
+	AnswerLatex   string   // extracted inline answer (MinerU style)
+	SolutionLatex string   // extracted inline solution (MinerU style)
 }
 
 // ParseResult holds the overall parsing result.

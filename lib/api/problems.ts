@@ -125,29 +125,21 @@ export async function rollbackProblemVersion(id: string, version: number) {
   return normalizeProblemDetail(await apiRequest<ProblemDetail>(`/problems/${id}/versions/${version}`, { method: 'POST' }));
 }
 
-export async function previewBatchImport(input: {
-  latex?: string;
-  separatorStart?: string;
-  separatorEnd?: string;
-  defaults: Record<string, unknown>;
-}) {
+export async function previewBatchImport(
+  input:
+    | {
+        latex?: string;
+        separatorStart?: string;
+        separatorEnd?: string;
+        defaults: Record<string, unknown>;
+      }
+    | FormData,
+) {
+  const isFormData = typeof FormData !== 'undefined' && input instanceof FormData;
   return apiRequest<ImportPreviewResponse>('/problems/batch-import/preview', {
     method: 'POST',
-    body: JSON.stringify(input),
+    body: isFormData ? input : JSON.stringify(input),
   });
-}
-
-export async function previewBatchImportWithFiles(
-  formData: FormData
-): Promise<ImportPreviewResponse & { pairedAnswerFiles?: string[]; unpairedWarnings?: string[] }> {
-  const response = await fetch('/api/v1/problems/import/preview', {
-    method: 'POST',
-    body: formData,
-  });
-  if (!response.ok) {
-    throw new Error(`Import preview failed: ${response.statusText}`);
-  }
-  return response.json();
 }
 
 export async function commitBatchImport(drafts: ParsedProblemDraft[]) {

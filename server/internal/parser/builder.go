@@ -126,6 +126,11 @@ func processProblemFile(
 		return nil, []ParseError{{Line: 0, Message: fmt.Sprintf("decode error: %v", err)}}, nil, ""
 	}
 
+	// Convert Markdown to LaTeX if needed
+	if strings.HasSuffix(strings.ToLower(pf.Filename), ".md") {
+		decoded = MdToTex(decoded)
+	}
+
 	blocks := ScanBlocks(decoded)
 	blocks = skipPreambleBlocks(blocks)
 	blocks = trimTrailingEndDocument(blocks)
@@ -142,8 +147,16 @@ func processProblemFile(
 	allProblems := merged
 	allErrors := enumerateErrors
 
+	// Fallback to MinerU heuristic parser if no structural matches found
 	if len(allProblems) == 0 {
-		return nil, allErrors, []string{fmt.Sprintf("文件 %q 未包含可识别的题目环境 (enumerate 或 mybox)", pf.Filename)}, ""
+		mineruProblems := ParseMinerU(decoded)
+		if len(mineruProblems) > 0 {
+			allProblems = mineruProblems
+		}
+	}
+
+	if len(allProblems) == 0 {
+		return nil, allErrors, []string{fmt.Sprintf("文件 %q 未包含可识别的题目环境 (enumerate, mybox, text markers, 或 MinerU 格式)", pf.Filename)}, ""
 	}
 
 	sectionTags := ExtractSectionTags(blocks)
@@ -188,6 +201,15 @@ func processProblemFile(
 				s := answerEntries[i].SolutionLatex
 				draft.SolutionLatex = &s
 			}
+		}
+		// Inline answer/solution from MinerU format overrides paired answer file
+		if pb.AnswerLatex != "" {
+			s := pb.AnswerLatex
+			draft.AnswerLatex = &s
+		}
+		if pb.SolutionLatex != "" {
+			s := pb.SolutionLatex
+			draft.SolutionLatex = &s
 		}
 
 		drafts = append(drafts, draft)

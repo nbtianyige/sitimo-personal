@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -175,14 +176,15 @@ func (s *Server) handlePreviewImport(w http.ResponseWriter, r *http.Request) {
 
 		files := r.MultipartForm.File["files"]
 		if len(files) == 0 {
-			respondError(w, http.StatusBadRequest, "no_files", errors.New("请至少上传一个 .tex 文件"))
+			respondError(w, http.StatusBadRequest, "no_files", errors.New("请至少上传一个 .tex 或 .md 文件"))
 			return
 		}
 
 		for _, fh := range files {
-			if !strings.HasSuffix(strings.ToLower(fh.Filename), ".tex") {
+			ext := strings.ToLower(filepath.Ext(fh.Filename))
+			if ext != ".tex" && ext != ".md" && ext != ".pdf" {
 				respondError(w, http.StatusBadRequest, "invalid_file_type",
-					errors.New(fmt.Sprintf("仅支持 .tex 文件: %s", fh.Filename)))
+					errors.New(fmt.Sprintf("仅支持 .tex、.md 或 .pdf 文件: %s", fh.Filename)))
 				return
 			}
 
@@ -196,6 +198,18 @@ func (s *Server) handlePreviewImport(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				respondError(w, http.StatusInternalServerError, "file_read_failed", err)
 				return
+			}
+
+			// If PDF, try to convert via external tool to .tex / .md
+			if ext == ".pdf" {
+				converted, convExt, err := s.pdfConverter.Convert(content, fh.Filename)
+				if err != nil {
+					respondError(w, http.StatusBadRequest, "pdf_conversion_failed", err)
+					return
+				}
+				content = []byte(converted)
+				// Change the effective extension for downstream parser routing
+				fh.Filename = strings.TrimSuffix(fh.Filename, ".pdf") + convExt
 			}
 
 			input.Files = append(input.Files, domain.UploadedFile{
