@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ExportJob, Problem } from './types';
+import type { ExportJob, ImportJob, Problem } from './types';
 
 interface BasketItem {
   id: string;
@@ -103,3 +103,43 @@ export const useExportStore = create<ExportStore>()((set, get) => ({
     set({ activeTask: null });
   },
 }));
+
+type ActiveImportTask = Pick<ImportJob, 'filename' | 'status'> & {
+  id: string;
+  progress: number;
+  startedAt: string;
+};
+
+interface ImportStore {
+  activeTask: ActiveImportTask | null;
+  syncFromJobs: (jobs: ImportJob[]) => void;
+  cancelActiveImport: () => void;
+}
+
+export const useImportStore = create<ImportStore>()((set, get) => ({
+  activeTask: null,
+  syncFromJobs: (jobs) => {
+    const activeJob = [...jobs].find((job) => job.status === 'processing') ?? jobs.find((job) => job.status === 'pending');
+
+    if (!activeJob) {
+      if (get().activeTask) {
+        set({ activeTask: null });
+      }
+      return;
+    }
+
+    set({
+      activeTask: {
+        id: activeJob.id,
+        filename: activeJob.filename,
+        status: activeJob.status,
+        progress: activeJob.progress ?? 0,
+        startedAt: activeJob.createdAt,
+      },
+    });
+  },
+  cancelActiveImport: () => {
+    set({ activeTask: null });
+  },
+}));
+

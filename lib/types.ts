@@ -114,6 +114,19 @@ export type ExportJob = {
   completedAt?: string;
 };
 
+export type ImportJob = {
+  id: string;
+  filename: string;
+  inputType: string;
+  status: 'pending' | 'processing' | 'done' | 'failed';
+  progress: number;
+  result?: unknown;
+  errorMessage?: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+};
+
 export type SearchResult = ProblemDetail & {
   snippet: string;
 };

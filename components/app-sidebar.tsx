@@ -9,7 +9,6 @@ import {
   Tag,
   Search,
   FileStack,
-  Download,
   Trash2,
   Settings,
   ChevronLeft,
@@ -36,7 +35,6 @@ const navItems = [
   { label: '搜索', icon: Search, href: '/search' },
   { label: '试卷', icon: FileStack, href: '/papers' },
   { label: '导入工具', icon: UploadCloud, href: '/import' },
-  { label: '导出历史', icon: Download, href: '/exports' },
   { label: '回收站', icon: Trash2, href: '/trash' },
   { label: '设置', icon: Settings, href: '/settings' },
 ];

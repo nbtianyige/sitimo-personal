@@ -96,7 +96,7 @@ export default function DashboardPage() {
         </PagePanel>
 
         <PagePanel className="overflow-hidden">
-          <SectionHeader title="最近导出" href="/exports" />
+          <SectionHeader title="最近导出" href="/import" />
           <div className="divide-y">
             {recentExports.length > 0 ? (
               recentExports.map((job) => {

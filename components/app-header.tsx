@@ -26,7 +26,7 @@ const pathLabels: Record<string, string> = {
   '/tags': '标签管理',
   '/search': '高级搜索',
   '/papers': '试卷列表',
-  '/exports': '导出历史',
+  '/import': '导入中心',
   '/trash': '回收站',
   '/settings': '设置',
 };

@@ -88,6 +88,27 @@ export const EXPORT_STATUS_CLASSNAMES: Record<string, string> = {
   failed: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
 };
 
+export const IMPORT_STATUS_FILTER_OPTIONS = [
+  { value: 'pending', label: '排队中' },
+  { value: 'processing', label: '处理中' },
+  { value: 'done', label: '完成' },
+  { value: 'failed', label: '失败' },
+] as const;
+
+export const IMPORT_STATUS_LABELS: Record<string, string> = {
+  pending: '等待中',
+  processing: '处理中',
+  done: '已完成',
+  failed: '失败',
+};
+
+export const IMPORT_STATUS_CLASSNAMES: Record<string, string> = {
+  pending: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  processing: 'border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+  done: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  failed: 'border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-300',
+};
+
 export const SEARCH_OPERATOR_LABELS = {
   eq: '=',
   contains: '包含',
