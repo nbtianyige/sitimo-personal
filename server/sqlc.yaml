@@ -6,6 +6,7 @@ sql:
       - "migrations/002_triggers.sql"
       - "migrations/003_export_job_cancel.sql"
       - "migrations/004_add_blank_lines_to_paper_items.sql"
+      - "migrations/005_import_jobs.sql"
     queries:
       - "queries"
     gen:

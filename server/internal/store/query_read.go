@@ -58,6 +58,12 @@ type ExportListOptions struct {
 	PageSize int
 }
 
+type ImportListOptions struct {
+	Status   string
+	Page     int
+	PageSize int
+}
+
 type ImageDetail struct {
 	Image          domain.ImageAsset      `json:"image"`
 	LinkedProblems []domain.ProblemDetail `json:"linkedProblems"`
@@ -245,6 +251,16 @@ func (r *Repository) GetExportJob(ctx context.Context, id string) (*domain.Expor
 	}
 
 	item := r.exportJobFromRecord(record)
+	return &item, nil
+}
+
+func (r *Repository) GetImportJob(ctx context.Context, id string) (*domain.ImportJob, error) {
+	record, err := r.queries.GetImportJobByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	item := r.importJobFromRecord(record)
 	return &item, nil
 }
 
@@ -586,6 +602,57 @@ LIMIT ` + limitArg + ` OFFSET ` + offsetArg
 	}
 
 	return domain.Paginated[domain.ExportJob]{
+		Items:    items,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	}, nil
+}
+
+func (r *Repository) ListImportJobs(ctx context.Context, opts ImportListOptions) (domain.Paginated[domain.ImportJob], error) {
+	page, pageSize, offset := normalizePage(opts.Page, opts.PageSize)
+	args := &sqlArgs{}
+	where := ""
+	if opts.Status != "" {
+		where = "WHERE status = " + args.Add(opts.Status)
+	}
+
+	countQuery := "SELECT count(*) FROM import_jobs " + where
+	var total int
+	if err := r.db.QueryRow(ctx, countQuery, args.values...).Scan(&total); err != nil {
+		return domain.Paginated[domain.ImportJob]{}, err
+	}
+
+	queryArgs := append([]any{}, args.values...)
+	limitArg := fmt.Sprintf("$%d", len(queryArgs)+1)
+	offsetArg := fmt.Sprintf("$%d", len(queryArgs)+2)
+	queryArgs = append(queryArgs, pageSize, offset)
+
+	query := `SELECT id, filename, input_type, status, progress, result, error_message,
+  created_at, started_at, completed_at
+FROM import_jobs ` + where + `
+ORDER BY created_at DESC
+LIMIT ` + limitArg + ` OFFSET ` + offsetArg
+
+	rows, err := r.db.Query(ctx, query, queryArgs...)
+	if err != nil {
+		return domain.Paginated[domain.ImportJob]{}, err
+	}
+	defer rows.Close()
+
+	items := make([]domain.ImportJob, 0)
+	for rows.Next() {
+		record, err := scanImportRecord(rows)
+		if err != nil {
+			return domain.Paginated[domain.ImportJob]{}, err
+		}
+		items = append(items, r.importJobFromRecord(record))
+	}
+	if err := rows.Err(); err != nil {
+		return domain.Paginated[domain.ImportJob]{}, err
+	}
+
+	return domain.Paginated[domain.ImportJob]{
 		Items:    items,
 		Total:    total,
 		Page:     page,
@@ -1205,6 +1272,23 @@ func scanExportRecord(scanner rowScanner) (sqlc.ExportJob, error) {
 		&record.StartedAt,
 		&record.CompletedAt,
 		&record.CancelRequestedAt,
+	)
+	return record, err
+}
+
+func scanImportRecord(scanner rowScanner) (sqlc.ImportJob, error) {
+	var record sqlc.ImportJob
+	err := scanner.Scan(
+		&record.ID,
+		&record.Filename,
+		&record.InputType,
+		&record.Status,
+		&record.Progress,
+		&record.Result,
+		&record.ErrorMessage,
+		&record.CreatedAt,
+		&record.StartedAt,
+		&record.CompletedAt,
 	)
 	return record, err
 }

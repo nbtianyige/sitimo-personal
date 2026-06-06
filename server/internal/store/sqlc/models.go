@@ -153,3 +153,16 @@ type Tag struct {
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
+
+type ImportJob struct {
+	ID           string
+	Filename     pgtype.Text
+	InputType    string
+	Status       string
+	Progress     int32
+	Result       []byte
+	ErrorMessage pgtype.Text
+	CreatedAt    pgtype.Timestamptz
+	StartedAt    pgtype.Timestamptz
+	CompletedAt  pgtype.Timestamptz
+}

@@ -53,6 +53,28 @@ const (
 	ExportStatusFailed     ExportStatus = "failed"
 )
 
+type ImportJobStatus string
+
+const (
+	ImportJobStatusPending    ImportJobStatus = "pending"
+	ImportJobStatusProcessing ImportJobStatus = "processing"
+	ImportJobStatusDone       ImportJobStatus = "done"
+	ImportJobStatusFailed     ImportJobStatus = "failed"
+)
+
+type ImportJob struct {
+	ID           string          `json:"id"`
+	Filename     string          `json:"filename"`
+	InputType    string          `json:"inputType"`
+	Status       ImportJobStatus `json:"status"`
+	Progress     int             `json:"progress"`
+	Result       *ImportPreviewResponse `json:"result,omitempty"`
+	ErrorMessage *string         `json:"errorMessage,omitempty"`
+	CreatedAt    time.Time       `json:"createdAt"`
+	StartedAt    *time.Time      `json:"startedAt,omitempty"`
+	CompletedAt  *time.Time      `json:"completedAt,omitempty"`
+}
+
 type PaperStatus string
 
 const (
