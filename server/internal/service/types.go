@@ -40,6 +40,19 @@ type ExportListParams struct {
 	PageSize int
 }
 
+type ImportListParams struct {
+	Status   string
+	Page     int
+	PageSize int
+}
+
+type ImportJobCreateInput struct {
+	Filename  string
+	InputType string
+	Files     []domain.UploadedFile
+	Defaults  map[string]any
+}
+
 type SeedEnvelope struct {
 	Tags          []domain.SeedTag              `json:"tags"`
 	Problems      []domain.SeedProblem          `json:"problems"`

@@ -98,6 +98,11 @@ func New(cfg config.Config, svc *service.Service, logger zerolog.Logger) http.Ha
 		r.Get("/exports/{id}/download", server.handleDownloadExport)
 		r.Get("/exports/stream", server.handleExportStream)
 
+		r.Post("/imports", server.handleCreateImport)
+		r.Get("/imports", server.handleListImports)
+		r.Get("/imports/{id}", server.handleGetImport)
+		r.Delete("/imports/{id}", server.handleDeleteImport)
+
 		r.Get("/meta/grades", server.handleMetaGrades)
 		r.Get("/meta/stats", server.handleMetaStats)
 		r.Get("/meta/recent-problems", server.handleRecentProblems)
