@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import { Toaster } from 'sonner';
 import { ThemeProvider } from '@/components/theme-provider';
@@ -8,16 +7,6 @@ import { AppLayout } from '@/components/app-layout';
 import { QueryProvider } from '@/components/query-provider';
 import { AppRuntime } from '@/components/app-runtime';
 import './globals.css';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
-});
 
 export const metadata: Metadata = {
   title: 'Sitimo - 数学题库管理系统',
@@ -60,7 +49,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable} bg-background`}
+      className="bg-background"
     >
       <body className="font-sans antialiased">
         <QueryProvider>
